@@ -1,6 +1,8 @@
+#!/usr/bin/python
+
 from microWebSrv import MicroWebSrv
 import time
-
+import sys
 
 # ----------------------------------------------------------------------------
 
@@ -118,7 +120,8 @@ def _closedCallback(webSocket):
 #	( "/test",	"POST",	_httpHandlerTestPost )
 # ]
 
-srv = MicroWebSrv(port=8080, webPath='www/')
+p = 80 if sys.platform == 'linux' else 8080
+srv = MicroWebSrv(port=p, webPath='www/')
 srv.MaxWebSocketRecvLen = 256
 srv.WebSocketThreaded = True
 srv.AcceptWebSocketCallback = _acceptWebSocketCallback
