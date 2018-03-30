@@ -120,7 +120,7 @@ class MicroWebSocket :
     # ----------------------------------------------------------------------------
 
     def _wsProcess(self, acceptCallback) :
-        self._socket.settimeout(3600)
+        #self._socket.settimeout(3600)
         self._closed = False
         try :
             acceptCallback(self, self._httpCli)

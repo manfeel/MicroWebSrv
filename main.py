@@ -1,11 +1,12 @@
-
 from microWebSrv import MicroWebSrv
+import time
+
 
 # ----------------------------------------------------------------------------
 
 @MicroWebSrv.route('/test')
-def _httpHandlerTestGet(httpClient, httpResponse) :
-	content = """\
+def _httpHandlerTestGet(httpClient, httpResponse):
+    content = """\
 	<!DOCTYPE html>
 	<html lang=en>
         <head>
@@ -24,18 +25,18 @@ def _httpHandlerTestGet(httpClient, httpResponse) :
         </body>
     </html>
 	""" % httpClient.GetIPAddr()
-	httpResponse.WriteResponseOk( headers		 = None,
-								  contentType	 = "text/html",
-								  contentCharset = "UTF-8",
-								  content 		 = content )
+    httpResponse.WriteResponseOk(headers=None,
+                                 contentType="text/html",
+                                 contentCharset="UTF-8",
+                                 content=content)
 
 
 @MicroWebSrv.route('/test', 'POST')
-def _httpHandlerTestPost(httpClient, httpResponse) :
-	formData  = httpClient.ReadRequestPostedFormData()
-	firstname = formData["firstname"]
-	lastname  = formData["lastname"]
-	content   = """\
+def _httpHandlerTestPost(httpClient, httpResponse):
+    formData = httpClient.ReadRequestPostedFormData()
+    firstname = formData["firstname"]
+    lastname = formData["lastname"]
+    content = """\
 	<!DOCTYPE html>
 	<html lang=en>
 		<head>
@@ -48,19 +49,19 @@ def _httpHandlerTestPost(httpClient, httpResponse) :
             Lastname = %s<br />
         </body>
     </html>
-	""" % ( MicroWebSrv.HTMLEscape(firstname),
-		    MicroWebSrv.HTMLEscape(lastname) )
-	httpResponse.WriteResponseOk( headers		 = None,
-								  contentType	 = "text/html",
-								  contentCharset = "UTF-8",
-								  content 		 = content )
+	""" % (MicroWebSrv.HTMLEscape(firstname),
+           MicroWebSrv.HTMLEscape(lastname))
+    httpResponse.WriteResponseOk(headers=None,
+                                 contentType="text/html",
+                                 contentCharset="UTF-8",
+                                 content=content)
 
 
-@MicroWebSrv.route('/edit/<index>')             # <IP>/edit/123           ->   args['index']=123
-@MicroWebSrv.route('/edit/<index>/abc/<foo>')   # <IP>/edit/123/abc/bar   ->   args['index']=123  args['foo']='bar'
-@MicroWebSrv.route('/edit')                     # <IP>/edit               ->   args={}
-def _httpHandlerEditWithArgs(httpClient, httpResponse, args={}) :
-	content = """\
+@MicroWebSrv.route('/edit/<index>')  # <IP>/edit/123           ->   args['index']=123
+@MicroWebSrv.route('/edit/<index>/abc/<foo>')  # <IP>/edit/123/abc/bar   ->   args['index']=123  args['foo']='bar'
+@MicroWebSrv.route('/edit')  # <IP>/edit               ->   args={}
+def _httpHandlerEditWithArgs(httpClient, httpResponse, args={}):
+    content = """\
 	<!DOCTYPE html>
 	<html lang=en>
         <head>
@@ -69,53 +70,60 @@ def _httpHandlerEditWithArgs(httpClient, httpResponse, args={}) :
         </head>
         <body>
 	"""
-	content += "<h1>EDIT item with {} variable arguments</h1>"\
-		.format(len(args))
-	
-	if 'index' in args :
-		content += "<p>index = {}</p>".format(args['index'])
-	
-	if 'foo' in args :
-		content += "<p>foo = {}</p>".format(args['foo'])
-	
-	content += """
+    content += "<h1>EDIT item with {} variable arguments</h1>" \
+        .format(len(args))
+
+    if 'index' in args:
+        content += "<p>index = {}</p>".format(args['index'])
+
+    if 'foo' in args:
+        content += "<p>foo = {}</p>".format(args['foo'])
+
+    content += """
         </body>
     </html>
 	"""
-	httpResponse.WriteResponseOk( headers		 = None,
-								  contentType	 = "text/html",
-								  contentCharset = "UTF-8",
-								  content 		 = content )
+    httpResponse.WriteResponseOk(headers=None,
+                                 contentType="text/html",
+                                 contentCharset="UTF-8",
+                                 content=content)
+
 
 # ----------------------------------------------------------------------------
 
-def _acceptWebSocketCallback(webSocket, httpClient) :
-	print("WS ACCEPT")
-	webSocket.RecvTextCallback   = _recvTextCallback
-	webSocket.RecvBinaryCallback = _recvBinaryCallback
-	webSocket.ClosedCallback 	 = _closedCallback
+def _acceptWebSocketCallback(webSocket, httpClient):
+    print("WS ACCEPT")
+    webSocket.RecvTextCallback = _recvTextCallback
+    webSocket.RecvBinaryCallback = _recvBinaryCallback
+    webSocket.ClosedCallback = _closedCallback
 
-def _recvTextCallback(webSocket, msg) :
-	print("WS RECV TEXT : %s" % msg)
-	webSocket.SendText("Reply for %s" % msg)
 
-def _recvBinaryCallback(webSocket, data) :
-	print("WS RECV DATA : %s" % data)
+def _recvTextCallback(webSocket, msg):
+    print("WS RECV TEXT : %s" % msg)
+    webSocket.SendText("Reply for %s" % msg)
 
-def _closedCallback(webSocket) :
-	print("WS CLOSED")
+
+def _recvBinaryCallback(webSocket, data):
+    print("WS RECV DATA : %s" % data)
+
+
+def _closedCallback(webSocket):
+    print("WS CLOSED")
+
 
 # ----------------------------------------------------------------------------
 
-#routeHandlers = [
+# routeHandlers = [
 #	( "/test",	"GET",	_httpHandlerTestGet ),
 #	( "/test",	"POST",	_httpHandlerTestPost )
-#]
+# ]
 
-srv = MicroWebSrv(webPath='www/')
-srv.MaxWebSocketRecvLen     = 256
-srv.WebSocketThreaded		= False
+srv = MicroWebSrv(port=8080, webPath='www/')
+srv.MaxWebSocketRecvLen = 256
+srv.WebSocketThreaded = True
 srv.AcceptWebSocketCallback = _acceptWebSocketCallback
-srv.Start(threaded=False)
+srv.Start(threaded=True)
+while True:
+    time.sleep(72000)
 
 # ----------------------------------------------------------------------------
